@@ -15,6 +15,7 @@ const authenticateToken = (req, res, next) => {
         
         if(decodedUser.tokenVersion != user.tokenVersion) return res.status(401).json({message: 'Token version mismatch'});
 
+        req.user_id = user.user_id
         next();
     });
 };

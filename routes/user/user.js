@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.get('/:user_id', authenticateToken, userController.getUserInfo);
 
-//router.use('/:user_id/friends', friendsRoutes);
+router.use('/:user_id/friends', friendsRoutes);
 
 module.exports = router;
