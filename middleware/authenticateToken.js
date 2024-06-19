@@ -13,9 +13,10 @@ const authenticateToken = (req, res, next) => {
         const user = await User.findById(decodedUser.id);
         if(!user) return res.status(403).json({message: 'User not found'});
         
-        if(decodedUser.tokenVersion != user.tokenVersion) return res.status(401).json({message: 'Token version mismatch'});
+        if(decodedUser.tokenVersion !== user.tokenVersion) return res.status(401).json({message: 'Token version mismatch'});
 
-        req.user_id = user.user_id
+        req.user_id = user._id
+        
         next();
     });
 };

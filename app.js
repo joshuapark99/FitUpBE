@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/user/user')
+const friendRoutes = require('./routes/user/friends')
 const printRoutes = require('./utils/printRoutes')
 const { PORT, MONGO_URI } = require('./config')
 
@@ -22,6 +23,7 @@ mongoose.connect(MONGO_URI).then(() => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+//app.use('/api/friends', friendRoutes)
 
 printRoutes(app);
 
