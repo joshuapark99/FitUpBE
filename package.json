@@ -2,9 +2,9 @@
   "name": "fitup",
   "version": "1.0.0",
   "description": "An app to keep track of your own and your friend's workouts.",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cross-env NODE_ENV=test mocha 'tests/**/*.test.js' --timeout 10000 --exit",
     "devStart": "nodemon --delay 1000ms app.js"
   },
   "author": "Joshua Park",
@@ -18,6 +18,10 @@
     "mongoose": "^8.4.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.3"
+    "chai": "^4.4.1",
+    "cross-env": "^7.0.3",
+    "mocha": "^10.4.0",
+    "nodemon": "^3.1.3",
+    "supertest": "^7.0.0"
   }
 }

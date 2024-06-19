@@ -3,7 +3,6 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/user/user')
-const friendRoutes = require('./routes/user/friends')
 const printRoutes = require('./utils/printRoutes')
 const { PORT, MONGO_URI } = require('./config')
 
@@ -30,3 +29,6 @@ printRoutes(app);
 app.listen(port, () => {
     console.log(`Server running on port ${port}`)
 })
+
+// Export the app for testing
+module.exports = app

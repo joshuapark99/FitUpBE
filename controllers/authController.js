@@ -6,11 +6,15 @@ const { JWT_SECRET, REFRESH_SECRET} = require('../config');
 exports.registerUser = async (req, res) => {
     try {
         const { username, email, firstName, lastName, password } = req.body;
+        if ( !username || !email || !firstName || !lastName || !password) return res.status(403).json({ message: 'all required fields not provided'})
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({ username, email, firstName, lastName, password: hashedPassword, refreshToken: null, tokenVersion: 0});
         await newUser.save();
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
+        if (err.code === 11000) {
+            res.status(400).json({ message: 'A user with that username or email already exists'});
+        }
         res.status(500).json({ error: err.message });
     }
 }
@@ -18,6 +22,7 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+        if (!email || !password) return res.status(403).json({ message: 'all required fields not provided'})
         const requestingUser = await User.findOne({ email });
         if (!requestingUser) return res.status(400).json({ message: 'User not found' });
         
@@ -32,7 +37,7 @@ exports.loginUser = async (req, res) => {
 
         await requestingUser.save();
         
-        res.json({ token, refreshToken });
+        res.status(201).json({ token, refreshToken });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -72,7 +77,8 @@ exports.refreshTokenUser = async (req, res) => {
 
 exports.logoutUser = async (req, res) => {
     const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(403).json({ message: 'refresh token not provided' });
     const user = await User.findOneAndUpdate({ refreshToken }, { refreshToken: null });
-    if (!user) return res.sendStatus(403);
-    res.sendStatus(200)
+    if (!user) return res.sendStatus(403).json('User could not be logged out');
+    res.sendStatus(200).json('User successfully logged out')
 }
