@@ -6,19 +6,21 @@ const validStatuses = ['pending_1to2' , 'pending_2to1', 'friends', 'blocked_by1'
 
 exports.modifyFriendship = async (req, res) => {
     try {
-        const friend_id = req.body.user_id;
-        if (!friend_id) return res.status(400).json({ message: "Invalid request body: 'user_id' field is required."});
+        const friend_username = req.body.username;
+        if (!friend_username) return res.status(400).json({ message: "Invalid request body: 'username' field is required."});
 
-        if (friend_id == req.user_id) return res.status(400).json({ message: "Invalid request: User cannot have relationship with themself."});
-
-        const friend = await User.findById(friend_id)
+        const friend = await User.findOne({username: friend_username});
         if(!friend) return res.status(404).json({ message: "The requested user was not found"});
 
+        if (friend._id == req.user_id) return res.status(400).json({ message: "Invalid request: User cannot have relationship with themself."});
 
-        const friendship = (req.user_id < friend_id) ? await Friendship.findOne({
-            user1: req.user_id, user2: friend_id 
+        
+
+
+        const friendship = (req.user_id < friend._id) ? await Friendship.findOne({
+            user1: req.user_id, user2: friend._id 
         }) : await Friendship.findOne({
-            user1: friend_id, user2: req.user_id
+            user1: friend._id, user2: req.user_id
         });
         
         // if friendship table does not exist, create a friendship table 
@@ -29,10 +31,10 @@ exports.modifyFriendship = async (req, res) => {
 
                 let newFriendship;
 
-                if (req.user_id < friend_id) {
+                if (req.user_id < friend._id) {
                     newFriendship = new Friendship({
                         user1: req.user_id,
-                        user2: friend_id,
+                        user2: friend._id,
                         status: validStatuses[0],
 
                         lastModified: Date.now(),
@@ -40,7 +42,7 @@ exports.modifyFriendship = async (req, res) => {
                     })
                 } else {
                     newFriendship = new Friendship({
-                        user1: friend_id,
+                        user1: friend._id,
                         user2: req.user_id,
                         status: validStatuses[1],
 
@@ -82,7 +84,7 @@ exports.modifyFriendship = async (req, res) => {
 
             // if operation is anything else, it cannot be executed on a new friendship table
             } else {
-                return res.status(400).json({ message: "Invalid request body: 'operation' is not valid on current friendship"})
+                return res.status(400).json({ message: "Invalid request body: 'operation' is not valid on current relationship"})
             }
 
         } else {
@@ -103,7 +105,7 @@ exports.modifyFriendship = async (req, res) => {
                 // block
                 case validOperations[2]:
                     try {
-                        const newFriendship = handleBlockUser(req.user_id, friend_id, friendship);
+                        const newFriendship = handleBlockUser(req.user_id, friend._id, friendship);
                         await newFriendship.save();
                         return res.status(201).json({ message: "User successfully blocked"});
                     } catch (obj) {
@@ -131,7 +133,7 @@ exports.modifyFriendship = async (req, res) => {
                 // unfriend
                 case validOperations[4]:
                     try {
-                        handleUnfriendUser(req.user_id, friendship).then(response => {
+                        handleUnfriendUser(friendship).then(response => {
                             if (response.success) {
                                 return res.status(201).json({ message: "User successfully unfriended"});
                             } else {
@@ -245,7 +247,7 @@ async function handleUnblockUser(user_id, friendshipTable) {
     if (user_id == friendshipTable.user1) {
         if(friendshipTable.status !== validStatuses[3]) throw { err_code: 400, message: "Can not unblock this user"}
         else {
-            await friendshipTable.deleteOne();
+            await Friendship.findByIdAndDelete(friendshipTable._id);
             return { action: 'deleted' };
         }
         // friendshipTable is changed so that user is no longer blocking 
@@ -255,7 +257,7 @@ async function handleUnblockUser(user_id, friendshipTable) {
     if (user_id == friendshipTable.user2) {
         if(friendshipTable.status !== validStatuses[4]) throw { err_code: 400, message: "Can not unblock this user"}
         else {
-            await friendshipTable.deleteOne();
+            await Friendship.findByIdAndDelete(friendshipTable._id);
             return { action: 'deleted' };
         }
         // friendshipTable is changed so that user is no longer blocking 
@@ -263,14 +265,14 @@ async function handleUnblockUser(user_id, friendshipTable) {
     }
 }
 
-async function handleUnfriendUser(user_id, friendshipTable) {
+async function handleUnfriendUser(friendshipTable) {
     // check if user is friends with other user
     if (friendshipTable.status !== validStatuses[2]) {
         // error saying user is not friends with other user
         return { success: false, message: 'Users are not friends'}
     }
 
-    await friendshipTable.deleteOne();
+    await Friendship.findByIdAndDelete(friendshipTable._id);
     return { success: true }
 }
 

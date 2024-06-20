@@ -18,7 +18,7 @@ async function setupUser(user, app) {
 					password: user.password
 				});
 		} else {
-			throw new Error(`Error register user: ${response.body.message}`)
+			throw new Error(`Error registering user: ${response.body.message}`)
 		}
 
 		if(response.statusCode === 201) {
@@ -29,7 +29,7 @@ async function setupUser(user, app) {
 		}
 
 	} catch (error) {
-		throw new Error(`Error setting up user: ${error}`);
+		throw new Error(error);
 	}
 }
 
@@ -39,10 +39,10 @@ async function registerUser(user, app) {
 			.post('/api/auth/register')
 			.send(user)
 		if(response.statusCode !== 201) {
-			throw new Error(`Error register user: ${response.body.message}`)
+			throw new Error(`Error registering user: ${response.body.message}`)
 		}
 	} catch (error) {
-		throw new Error(`Error setting up user: ${error}`);
+		throw new Error(error);
 	}
 }
 
