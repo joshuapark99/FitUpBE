@@ -1,36 +1,28 @@
 const request = require('supertest');
 const { expect } = require('chai');
 
-const app = require('../app');
-const { default: mongoose } = require('mongoose');
-const User = require('../models/User');
+const app = require('../../app');
+const User = require('../../models/User');
 const jwt = require('jsonwebtoken')
+
+const { Ian } = require('../testUsers')
 
 describe('Auth API', () => {
     
     const newUser = {
-        testUsername : 'testUser',
-        testEmail: 'testEmail',
-        testFirstName: 'testFirst',
-        testLastName: 'testLast',
-        testPassword: 'testPassword'
+        testUsername : Ian.username,
+        testEmail: Ian.email,
+        testFirstName: Ian.firstName,
+        testLastName: Ian.lastName,
+        testPassword: Ian.password
     };
 
     before(async () => {
-        await mongoose.connect(process.env.MONGO_URI_TEST);
         await User.deleteMany({})
-        const testUser = new User({ 
-            username: newUser.testUsername,
-            email: newUser.testEmail,
-            firstName: newUser.testFirstName,
-            lastName: newUser.testLastName,
-            password: newUser.testPassword
-        })
-        await testUser.save()
     });
 
     after(async () => {
-        await mongoose.connection.close();
+        await User.deleteMany({})
     });
 
     describe('POST /api/auth/register', () => {
@@ -38,7 +30,6 @@ describe('Auth API', () => {
             // Setup
             
             await User.findOneAndDelete({username: newUser.testUsername})
-
 
             //Exercise
             
@@ -153,7 +144,7 @@ describe('Auth API', () => {
             expect(res.body).to.have.property("message", "User not found")
         });
 
-        it('should return User not found when trying to login with wrong password', async () => {
+        it('should return Invalid credentials when trying to login with wrong password', async () => {
             const res = await request(app)
                 .post('/api/auth/login')
                 .send({

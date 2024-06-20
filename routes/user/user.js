@@ -11,7 +11,9 @@ const router = express.Router();
 router.use('/friends', friendsRoutes);
 
 // this needs to be changed to asking for username
-router.get('/:user_id', authenticateToken, userController.getUserInfo);
+router.get('/:username', authenticateToken, userController.getUserInfo);
+
+router.get('/', authenticateToken, userController.getUserInfo)
 
 
 module.exports = router;
