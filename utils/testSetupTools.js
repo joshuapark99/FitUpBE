@@ -33,4 +33,20 @@ async function setupUser(user, app) {
 	}
 }
 
-module.exports = setupUser;
+async function registerUser(user, app) {
+	try {
+		const response = await request(app)
+			.post('/api/auth/register')
+			.send(user)
+		if(response.statusCode !== 201) {
+			throw new Error(`Error register user: ${response.body.message}`)
+		}
+	} catch (error) {
+		throw new Error(`Error setting up user: ${error}`);
+	}
+}
+
+module.exports = {
+	setupUser,
+	registerUser
+}

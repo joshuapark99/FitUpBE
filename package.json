@@ -4,7 +4,7 @@
   "description": "An app to keep track of your own and your friend's workouts.",
   "main": "app.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test mocha 'tests/**/*.test.js' --timeout 10000 --exit",
+    "test": "cross-env NODE_ENV=test mocha 'test/**/*.test.js' --timeout 10000 --exit",
     "devStart": "nodemon --delay 1000ms app.js"
   },
   "author": "Joshua Park",

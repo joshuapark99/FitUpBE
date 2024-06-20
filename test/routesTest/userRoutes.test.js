@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const app = require('../../app');
 const User = require('../../models/User');
 
-const setupUser = require('../../utils/testSetupTools')
+const { setupUser } = require('../../utils/testSetupTools')
 
 const { Ian, Chang, Andrew } = require('../testUsers')
 
@@ -69,5 +69,16 @@ describe('User API', async () => {
             })
         });
 
+    });
+
+    describe('Friends endpoints', async () => {
+        
+        before(async () => {
+            const andrewUser = await setupUser(Andrew, app);
+        });
+        
+        it('should blah blah', async () => {
+            expect(4).to.equal(4)
+        });
     });
 });

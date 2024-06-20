@@ -6,6 +6,7 @@ const User = require('../../models/User');
 const jwt = require('jsonwebtoken')
 
 const { Ian } = require('../testUsers')
+const { setupUser, registerUser } = require('../../utils/testSetupTools')
 
 describe('Auth API', () => {
     
@@ -26,6 +27,11 @@ describe('Auth API', () => {
     });
 
     describe('POST /api/auth/register', () => {
+
+        after(async () => {
+            await User.deleteMany({});
+        })
+
         it(('should register a new user'), async () => {
             // Setup
             
@@ -70,11 +76,19 @@ describe('Auth API', () => {
 
         it(('should give an error when registering a user with duplicate details'), async () => {
             // Setup
-            
+            let res = await request(app)
+                .post('/api/auth/register')
+                .send({ 
+                    username: newUser.testUsername,
+                    email: newUser.testEmail,
+                    firstName: newUser.testFirstName,
+                    lastName: newUser.testLastName,
+                    password: newUser.testPassword
+                });
 
             //Exercise
             
-            const res = await request(app)
+            res = await request(app)
                 .post('/api/auth/register')
                 .send({ 
                     username: newUser.testUsername,
@@ -95,6 +109,14 @@ describe('Auth API', () => {
     })
 
     describe('POST /api/auth/login', () => {
+        before(async () => {
+            await registerUser(Ian, app);
+        });
+
+        after(async () => {
+            await User.findOneAndDelete({ email: Ian.email })
+        })
+
         it('should send login post method and return access token and refresh token', async () => {
             const res = await request(app)
                 .post('/api/auth/login')
@@ -190,6 +212,13 @@ describe('Auth API', () => {
     });
 
     describe('POST /api/auth/token', () => {
+        before(async () => {
+            await setupUser(Ian, app);
+        });
+
+        after(async () => {
+            await User.findOneAndDelete({email: Ian.email})
+        })
         it('should refresh access/refresh token and token versions should increment', async () => {
             const user = await User.findOne({ email: newUser.testEmail })
             const userRefreshToken = user.refreshToken
@@ -250,6 +279,13 @@ describe('Auth API', () => {
     });
 
     describe('POST /api/auth/logout', () => {
+        before(async () => {
+            await setupUser(Ian, app);
+        });
+
+        after(async () => {
+            await User.findOneAndDelete({ email: Ian.email })
+        });
         it('should set refreshToken to null for user after calling logout', async () => {
             const user = await User.findOne({ email: newUser.testEmail })
             const userRefreshToken = user.refreshToken
