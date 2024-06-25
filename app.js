@@ -23,8 +23,11 @@ mongoose.connect(MONGO_URI).then(() => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 
-printRoutes(app);
+//printRoutes(app);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`)
 })
+
+// Export the app for testing
+module.exports = app
