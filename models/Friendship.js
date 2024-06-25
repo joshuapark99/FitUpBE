@@ -6,7 +6,7 @@ const friendshipSchema = new mongoose.Schema({
 
     status: {
         type: String,
-        enum: ['pending_1to2' , 'pending_2to1', 'friends', 'blocked_by1', 'blocked_by2', 'block_both'],
+        enum: ['pending_awaiting2' , 'pending_awaiting1', 'friends', 'blocked_by1', 'blocked_by2', 'blocked_both'],
         required: true
     },
 
