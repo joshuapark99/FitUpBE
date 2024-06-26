@@ -6,7 +6,7 @@ const User = require('../../models/User');
 const jwt = require('jsonwebtoken')
 
 const { Ian } = require('../testUsers')
-const { setupUser, registerUser } = require('../../utils/testSetupTools')
+const { setupUser, registerUser } = require('../../utils/testSetupToolsV1')
 
 describe('Auth API', () => {
     
@@ -18,6 +18,8 @@ describe('Auth API', () => {
         testPassword: Ian.password
     };
 
+    const apiPathRoot = "/api/v1/auth"
+
     before(async () => {
         await User.deleteMany({})
     });
@@ -27,6 +29,8 @@ describe('Auth API', () => {
     });
 
     describe('POST /api/auth/register', () => {
+
+        const apiEndpoint = "/register"
 
         after(async () => {
             await User.deleteMany({});
@@ -40,7 +44,7 @@ describe('Auth API', () => {
             //Exercise
             
             const res = await request(app)
-                .post('/api/auth/register')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({ 
                     username: newUser.testUsername,
                     email: newUser.testEmail,
@@ -67,7 +71,7 @@ describe('Auth API', () => {
 
         it('should return 403 error when fields not provided', async () => {
             const res = await request(app)
-                .post('/api/auth/register')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({});
 
             expect(res.status).to.equal(403);
@@ -77,7 +81,7 @@ describe('Auth API', () => {
         it(('should give an error when registering a user with duplicate details'), async () => {
             // Setup
             let res = await request(app)
-                .post('/api/auth/register')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({ 
                     username: newUser.testUsername,
                     email: newUser.testEmail,
@@ -89,7 +93,7 @@ describe('Auth API', () => {
             //Exercise
             
             res = await request(app)
-                .post('/api/auth/register')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({ 
                     username: newUser.testUsername,
                     email: newUser.testEmail,
@@ -109,6 +113,9 @@ describe('Auth API', () => {
     })
 
     describe('POST /api/auth/login', () => {
+
+        const apiEndpoint = '/login'
+
         before(async () => {
             await registerUser(Ian, app);
         });
@@ -119,7 +126,7 @@ describe('Auth API', () => {
 
         it('should send login post method and return access token and refresh token', async () => {
             const res = await request(app)
-                .post('/api/auth/login')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({
                     email: newUser.testEmail,
                     password: newUser.testPassword
@@ -147,7 +154,7 @@ describe('Auth API', () => {
 
         it('should return 403 error when email or password not provided', async () => {
             const res = await request(app)
-                .post('/api/auth/login')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({});
 
             expect(res.status).to.equal(403);
@@ -156,7 +163,7 @@ describe('Auth API', () => {
 
         it('should return User not found when trying to login with wrong email', async () => {
             const res = await request(app)
-                .post('/api/auth/login')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({
                     email: "wrongemail@gmail.com",
                     password: newUser.testPassword
@@ -168,7 +175,7 @@ describe('Auth API', () => {
 
         it('should return Invalid credentials when trying to login with wrong password', async () => {
             const res = await request(app)
-                .post('/api/auth/login')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({
                     email: newUser.testEmail,
                     password: "wrongPassword"
@@ -180,7 +187,7 @@ describe('Auth API', () => {
 
         it('should send two login post method and token version should change', async () => {
             const res = await request(app)
-                .post('/api/auth/login')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({
                     email: newUser.testEmail,
                     password: newUser.testPassword
@@ -194,7 +201,7 @@ describe('Auth API', () => {
 
 
             const res2 = await request(app)
-                .post('/api/auth/login')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({
                     email: newUser.testEmail,
                     password: newUser.testPassword
@@ -212,6 +219,9 @@ describe('Auth API', () => {
     });
 
     describe('POST /api/auth/token', () => {
+
+        const apiEndpoint = '/token'
+
         before(async () => {
             await setupUser(Ian, app);
         });
@@ -219,12 +229,13 @@ describe('Auth API', () => {
         after(async () => {
             await User.findOneAndDelete({email: Ian.email})
         })
+
         it('should refresh access/refresh token and token versions should increment', async () => {
             const user = await User.findOne({ email: newUser.testEmail })
             const userRefreshToken = user.refreshToken
             
             const res = await request(app)
-                .post('/api/auth/token')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({
                     refreshToken: userRefreshToken
                 });
@@ -244,7 +255,7 @@ describe('Auth API', () => {
 
         it('should return 403 error when refreshToken not provided', async () => {
             const res = await request(app)
-                .post('/api/auth/token')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({});
 
             expect(res.status).to.equal(403);
@@ -253,7 +264,7 @@ describe('Auth API', () => {
 
         it('should return error when refresh token does not match', async () => {
             const res = await request(app)
-                .post('/api/auth/token')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({refreshToken:'wrongtoken'});
 
             expect(res.status).to.equal(403);
@@ -279,6 +290,9 @@ describe('Auth API', () => {
     });
 
     describe('POST /api/auth/logout', () => {
+
+        const apiEndpoint = '/logout'
+
         before(async () => {
             await setupUser(Ian, app);
         });
@@ -291,7 +305,7 @@ describe('Auth API', () => {
             const userRefreshToken = user.refreshToken
             
             const res = await request(app)
-                .post('/api/auth/logout')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({
                     refreshToken: userRefreshToken
                 });
@@ -305,7 +319,7 @@ describe('Auth API', () => {
 
         it('should return 403 error when refreshToken not provided', async () => {
             const res = await request(app)
-                .post('/api/auth/logout')
+                .post(`${apiPathRoot}${apiEndpoint}`)
                 .send({});
 
             expect(res.status).to.equal(403);
