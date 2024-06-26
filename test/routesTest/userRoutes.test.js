@@ -5,11 +5,13 @@ const app = require('../../app');
 const User = require('../../models/User');
 const Friendship = require('../../models/Friendship')
 
-const { setupUser } = require('../../utils/testSetupTools')
+const { setupUser } = require('../../utils/testSetupToolsV1')
 
 const { Ian, Chang, Andrew } = require('../testUsers')
 
 describe('User API', async () => {
+
+    const apiPathRoot = '/api/v1/user'
 
     let ianAccessToken;
     let changAccessToken;
@@ -33,10 +35,13 @@ describe('User API', async () => {
     describe('User endpoints', async () => {
 
         describe('GET /api/user/:username', async () => {
+
+            const apiEndpoint = '/'
+
             it('should return client user information when username is not provided', async () => {
                 
                 const res = await request(app)
-                    .get('/api/user/')
+                    .get(`${apiPathRoot}${apiEndpoint}`)
                     .set("Authorization", ianAccessToken)
 
                 expect(res.status).to.equal(200)
@@ -47,7 +52,7 @@ describe('User API', async () => {
 
             it('should return other user information when username is provided', async () => {
                 const res = await request(app)
-                    .get(`/api/user/${Chang.username}`)
+                    .get(`${apiPathRoot}${apiEndpoint}${Chang.username}`)
                     .set("Authorization", ianAccessToken)
                 
                 expect(res.status).to.equal(200)
@@ -58,7 +63,7 @@ describe('User API', async () => {
 
             it('should return "User not found" when providing a non-registered username', async () => {
                 const res = await request(app)
-                    .get(`/api/user/fakeUsername`)
+                    .get(`${apiPathRoot}${apiEndpoint}fakeUsername`)
                     .set("Authorization", ianAccessToken)
 
                 expect(res.status).to.equal(400);
@@ -67,7 +72,7 @@ describe('User API', async () => {
 
             it('should fail authorization when providing invalid access token', async () => {
                 const res = await request(app)
-                    .get(`/api/user/`)
+                    .get(`${apiPathRoot}${apiEndpoint}`)
                     .set("Authorization", "badAccessToken");
                 
                 expect(res.status).to.equal(403);
@@ -99,13 +104,15 @@ describe('User API', async () => {
         
         describe('POST /api/user/friends', async () => {
 
+            const apiEndpoint = '/friends'
+
             afterEach(async () => {
                 await Friendship.deleteMany({});
             })
             describe('Initial Validations', async () => {
                 it('should throw error when username is not provided', async () => {
                     const res = await request(app)
-                        .post('/api/user/friends/')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", ianAccessToken);
 
                     expect(res.status).to.equal(400);
@@ -116,7 +123,7 @@ describe('User API', async () => {
 
 
                     const res = await request(app)
-                        .post('/api/user/friends/')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", ianAccessToken)
                         .send({
                             "username":"fakeusername",
@@ -129,7 +136,7 @@ describe('User API', async () => {
     
                 it('should throw error when user tries to modify relationship with themself', async () => {
                     const res = await request(app)
-                        .post('/api/user/friends/')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", ianAccessToken)
                         .send({
                             "username":Ian.username,
@@ -142,9 +149,10 @@ describe('User API', async () => {
             });
 
             describe('Friendship table does not exist and will create one if valid', async () => {
+
                 it('should create new friendship table with correct status pending_awaiting2/pending_awaiting1 when friendship table does not exist with operation send', async () => {
                     let res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", ianAccessToken)
                         .send({
                             "username": Chang.username,
@@ -165,7 +173,7 @@ describe('User API', async () => {
                     await Friendship.findByIdAndDelete(friendshipTable._id);
 
                     res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", changAccessToken)
                         .send({
                             "username": Ian.username,
@@ -187,7 +195,7 @@ describe('User API', async () => {
     
                 it('should create new friendship table with correct status blocked_by1/blocked_by2 when friendship table does not exist with operation block', async () => {
                     let res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", ianAccessToken)
                         .send({
                             "username": Chang.username,
@@ -208,7 +216,7 @@ describe('User API', async () => {
                     await Friendship.findByIdAndDelete(friendshipTable._id);
 
                     res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", changAccessToken)
                         .send({
                             "username": Ian.username,
@@ -229,7 +237,7 @@ describe('User API', async () => {
 
                 it('should throw error when user tries operation [accept, unblock, unfriend] when friendship table does not exist with (username)', async () => {
                     let res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", ianAccessToken)
                         .send({
                             "username": Chang.username,
@@ -240,7 +248,7 @@ describe('User API', async () => {
                     expect(res.body).to.have.property("message", "Invalid request body: 'operation' is not valid on current relationship")
 
                     res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", ianAccessToken)
                         .send({
                             "username": Chang.username,
@@ -251,7 +259,7 @@ describe('User API', async () => {
                     expect(res.body).to.have.property("message", "Invalid request body: 'operation' is not valid on current relationship")
 
                     res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", ianAccessToken)
                         .send({
                             "username": Chang.username,
@@ -282,7 +290,7 @@ describe('User API', async () => {
                     await pendingFriendship_awaiting2.save();
 
                     let res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", aToken2) // setting authorization to user who needs to accept
                         .send({
                             "username": username1,
@@ -310,7 +318,7 @@ describe('User API', async () => {
                     await pendingFriendship_awaiting1.save();
 
                     res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", aToken1) // setting authorization to user who needs to accept
                         .send({
                             "username": username2,
@@ -345,7 +353,7 @@ describe('User API', async () => {
                     await pendingRelationship_awaiting2.save();
                     
                     let res = await request(app)
-                        .post('/api/user/friends/')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", aToken1)
                         .send({
                             "username": username2,
@@ -366,7 +374,7 @@ describe('User API', async () => {
                     await pendingRelationship_awaiting1.save();
 
                     res = await request(app)
-                        .post('/api/user/friends/')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", aToken2)
                         .send({
                             "username": username1,
@@ -390,7 +398,7 @@ describe('User API', async () => {
                     });
                     await friendRelationship.save();
                     const frResponse = await request(app)
-                        .post('/api/user/friends/')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", aToken1)
                         .send({
                             "username": username2,
@@ -407,7 +415,7 @@ describe('User API', async () => {
                     });
                     await blocked_by1Relationship.save();
                     const b1Response = await request(app)
-                        .post('/api/user/friends/')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", aToken1)
                         .send({
                             "username": username2,
@@ -423,7 +431,7 @@ describe('User API', async () => {
                     });
                     await blocked_by2Relationship.save();
                     const b2Response = await request(app)
-                        .post('/api/user/friends/')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", aToken1)
                         .send({
                             "username": username2,
@@ -439,7 +447,7 @@ describe('User API', async () => {
                     });
                     await blocked_bothRelationship.save();
                     const bbResponse = await request(app)
-                        .post('/api/user/friends/')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", aToken1)
                         .send({
                             "username": username2,
@@ -493,7 +501,7 @@ describe('User API', async () => {
                         await relationship.save();
 
                         const res = await request(app)
-                            .post('/api/user/friends/')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", userInformation.aToken1)
                             .send({
                                 "username": userInformation.username2,
@@ -511,7 +519,7 @@ describe('User API', async () => {
                         await relationship.save()
 
                         const res2 = await request(app)
-                            .post('/api/user/friends/')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", userInformation.aToken2)
                             .send({
                                 "username": userInformation.username1,
@@ -546,7 +554,7 @@ describe('User API', async () => {
                     await blockby1Friendship.save()
 
                     let res = await request(app)
-                            .post('/api/user/friends/')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", userInformation.aToken2)
                             .send({
                                 "username": userInformation.username1,
@@ -566,7 +574,7 @@ describe('User API', async () => {
                     await blockby2Friendship.save();
                     
                     res = await request(app)
-                            .post('/api/user/friends/')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", userInformation.aToken1)
                             .send({
                                 "username": userInformation.username2,
@@ -599,7 +607,7 @@ describe('User API', async () => {
                     await blockby1Friendship.save();
 
                     let res = await request(app)
-                            .post('/api/user/friends/')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", userInformation.aToken1)
                             .send({
                                 "username": userInformation.username2,
@@ -614,7 +622,7 @@ describe('User API', async () => {
                     await blockby2Friendship.save();
 
                     res = await request(app)
-                            .post('/api/user/friends/')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", userInformation.aToken2)
                             .send({
                                 "username": userInformation.username1,
@@ -637,7 +645,7 @@ describe('User API', async () => {
                     blockBothFriendship.save();
 
                     const res = await request(app)
-                            .post('/api/user/friends/')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", userInformation.aToken1)
                             .send({
                                 "username": userInformation.username2,
@@ -645,7 +653,7 @@ describe('User API', async () => {
                     });
 
                     const res2 = await request(app)
-                            .post('/api/user/friends/')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", userInformation.aToken1)
                             .send({
                                 "username": userInformation.username2,
@@ -690,7 +698,7 @@ describe('User API', async () => {
                         await friendship.save();
 
                         const res = await request(app)
-                            .post('/api/user/friends')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", ianAccessToken)
                             .send({
                                 "username": Chang.username,
@@ -717,7 +725,7 @@ describe('User API', async () => {
                     await blockedBothFriendship.save();
 
                     let res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set('Authorization', userInformation.aToken1)
                         .send({
                             "username": userInformation.username2,
@@ -742,7 +750,7 @@ describe('User API', async () => {
                     await blockedBothFriendship.save();
 
                     res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set('Authorization', userInformation.aToken2)
                         .send({
                             "username": userInformation.username1,
@@ -769,7 +777,7 @@ describe('User API', async () => {
                     await blockedFriendship.save();
 
                     let res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", userInformation.aToken1)
                         .send({
                             "username": userInformation.username2,
@@ -791,7 +799,7 @@ describe('User API', async () => {
                     await blockedFriendship.save();
 
                     res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", userInformation.aToken2)
                         .send({
                             "username": userInformation.username1,
@@ -829,7 +837,7 @@ describe('User API', async () => {
                     await mutualFriendship.save();
 
                     const res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", userInformation.aToken1)
                         .send({
                             "username": userInformation.username2,
@@ -858,7 +866,7 @@ describe('User API', async () => {
                         await friendship.save();
 
                         const res = await request(app)
-                            .post('/api/user/friends')
+                            .post(`${apiPathRoot}${apiEndpoint}`)
                             .set("Authorization", userInformation.aToken1)
                             .send({
                                 "username": userInformation.username2,
@@ -895,7 +903,7 @@ describe('User API', async () => {
                     await existingFriendship.save();
 
                     const res = await request(app)
-                        .post('/api/user/friends')
+                        .post(`${apiPathRoot}${apiEndpoint}`)
                         .set("Authorization", userInformation.aToken1)
                         .send({
                             "username": userInformation.username2,
@@ -914,7 +922,8 @@ describe('User API', async () => {
 
         describe('GET /api/user/friends/:username', async () => {
 
-
+            const apiEndpoint = '/friends'
+            
             let ianChangFriendship;
             let ianAndrewFriendship;
             let changAndrewFriendship;
@@ -953,7 +962,7 @@ describe('User API', async () => {
 
             it('should return user friends when username is not provided', async () => {
                 const res = await request(app)
-                    .get('/api/user/friends')
+                    .get(`${apiPathRoot}${apiEndpoint}`)
                     .set("Authorization", ianAccessToken)
                 
                 expect(res.status).to.equal(201);
@@ -964,7 +973,7 @@ describe('User API', async () => {
                 expect(usernames).to.include(Andrew.username);
 
                 const oneFriendRes = await request(app)
-                    .get('/api/user/friends')
+                    .get(`${apiPathRoot}${apiEndpoint}`)
                     .set("Authorization", changAccessToken)
 
                 expect(oneFriendRes.status).to.equal(201);
@@ -976,7 +985,7 @@ describe('User API', async () => {
 
             it("should return username's friends when username is provided", async () => {
                 const res = await request(app)
-                    .get(`/api/user/friends/${Ian.username}`)
+                    .get(`${apiPathRoot}${apiEndpoint}/${Ian.username}`)
                     .set("Authorization", changAccessToken)
 
                     expect(res.status).to.equal(201);
@@ -989,7 +998,7 @@ describe('User API', async () => {
 
             it('should throw error when username does not exist in user table', async () => {
                 const res = await request(app)
-                    .get(`/api/user/friends/nonExistingUsername`)
+                    .get(`${apiPathRoot}${apiEndpoint}/nonExistingUsername`)
                     .set("Authorization", changAccessToken)
                 
                 expect(res.status).to.equal(500)

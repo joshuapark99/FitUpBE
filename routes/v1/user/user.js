@@ -1,9 +1,8 @@
 const express = require('express');
 
-const authenticateToken  = require('../../middleware/authenticateToken');
-const userController = require('../../controllers/userController');
+const authenticateToken  = require('../../../middleware/authenticateToken');
+const userController = require('../../../controllers/userController');
 const friendsRoutes = require('./friends');
-
 
 const router = express.Router();
 

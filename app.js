@@ -1,8 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
-const authRoutes = require('./routes/auth')
-const userRoutes = require('./routes/user/user')
+const apiV1Routes = require('./routes/v1')
 const printRoutes = require('./utils/printRoutes')
 const { PORT, MONGO_URI } = require('./config')
 
@@ -19,11 +18,8 @@ mongoose.connect(MONGO_URI).then(() => {
     console.error(err);
 });
 
+app.use('/api/v1', apiV1Routes);
 
-app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-
-//printRoutes(app);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`)
