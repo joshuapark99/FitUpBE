@@ -5,8 +5,8 @@ const app = require('../../app');
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken')
 
-const { Ian } = require('../testUsers')
-const { setupUser, registerUser } = require('../../utils/testSetupToolsV1')
+const { Ian } = require('../testObjects/testUsers')
+const { setupUser, registerUser } = require('../testTools/testSetupToolsV1')
 
 describe('Auth API', () => {
     

@@ -4,19 +4,20 @@ const postSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User'},
     text: { 
         type: String,
+        default: null,
         validate: {
             validator: function (value) {
-                return (!this.postType.includes('text') && !value) || (this.categories.includes('text') && value)
+                return (!this.postType.includes('text') && !value) || (this.postType.includes('text') && value)
             },
-
+            message: `Text must be provided if and only if postType includes "text"`
         }
-    
     },
     mediaUrl: { 
         type: String,
+        default: null,
         validate: {
             validator: function (value) {
-                return (!this.postType.includes('media') && !value) || (this.categories.includes('media') && value)
+                return (!this.postType.includes('media') && !value) || (this.postType.includes('media') && value)
             },
             message: 'Media URL must be provided if and only if postType includes "media"'
         }
@@ -29,13 +30,7 @@ const postSchema = new mongoose.Schema({
     mentions: [{ type: String }],
     postType: [{
         type: String,
-        enum: ['text', 'media', 'workout'],
-        validate: {
-            validator: function (value) {
-                return Array.isArray(value) && new Set(value).size === value.length;
-            },
-            message: props => `${props.value} contains duplicate types`
-        }
+        enum: ['text', 'media', 'workout']
     }],
     // workout: { 
     //     type: mongoose.Schema.Types.ObjectId, 

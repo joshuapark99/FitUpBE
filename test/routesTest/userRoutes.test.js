@@ -5,9 +5,9 @@ const app = require('../../app');
 const User = require('../../models/User');
 const Friendship = require('../../models/Friendship')
 
-const { setupUser } = require('../../utils/testSetupToolsV1')
+const { setupUser } = require('../testTools/testSetupToolsV1')
 
-const { Ian, Chang, Andrew } = require('../testUsers')
+const { Ian, Chang, Andrew } = require('../testObjects/testUsers')
 
 describe('User API', async () => {
 
@@ -536,6 +536,7 @@ describe('User API', async () => {
                 });
 
                 it('should change friendship table status to blocked_both when operation is block and current status is blocked_by1/blocked_by2', async () => {
+                    await Friendship.deleteMany({});
 
                     const blockby1Friendship = new Friendship({
                         user1: userInformation.user1Id,
