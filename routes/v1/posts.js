@@ -8,14 +8,17 @@ const authenticateToken  = require('../../middleware/authenticateToken');
 
 const router = express.Router();
 
-router.post('/', authenticateToken, authController.createPost);
+router.post('/post/:post_id/like', authenticateToken, postsController.modifyLikeOnPost)
 
-router.get('/post/:post_id', authenticateToken, authController.getSinglePost);
+router.get('/post/:post_id', authenticateToken, postsController.getSinglePost);
 
-router.get('/', authenticateToken, authController.getPosts);
+router.delete('/post/:post_id', authenticateToken, postsController.deletePost);
 
-router.get('/user/:user_id', authenticateToken, authController.getUserPosts);
+router.get('/user/:user_id', authenticateToken, postsController.getUserPosts);
 
-router.delete('/post/:post_id', authenticateToken, authController.deletePost);
+router.post('/', authenticateToken, postsController.createPost);
+
+router.get('/', authenticateToken, postsController.getPosts);
+
 
 module.exports = router;
