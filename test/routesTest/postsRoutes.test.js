@@ -9,7 +9,6 @@ const User = require('../../models/User')
 const { createPostTypeObject } = require('../testObjects/testPosts');
 const { Ian, Chang } = require('../testObjects/testUsers');
 const { setupUser } = require('../testTools/testSetupToolsV1');
-const { createPost } = require('../../controllers/postsController');
 
 describe('Posts API', async () => {
     const apiPathRoot = '/api/v1/posts';
@@ -22,9 +21,6 @@ describe('Posts API', async () => {
         ({ accessToken, userId } = await setupUser(Chang, app));
         changAccessToken = accessToken;
         changId = userId;
-
-
-        //exampleTextPost = createTextPostObject(ianId);
     });
 
     after(async () => {
@@ -156,7 +152,6 @@ describe('Posts API', async () => {
                     .set("Authorization", ianAccessToken)
                     .send(examplePost);
                 
-                console.log(res.body);
                 expect(res.status).to.equal(403)
                 expect(res.body.errors.postType).to.have.property("message",'Provided postType is invalid');
             });
