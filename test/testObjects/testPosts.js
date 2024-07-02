@@ -5,7 +5,7 @@ exports.createPostTypeObject = (userId, postType) => {
         userId: userId,
         text: postType.includes('text') ? "Example text for text post" : null,
         mediaUrl: postType.includes('media') ? "exampleurlformedia.com" : null,
-        dateCreated: Date.now,
+        dateCreated: Date.now(),
         likes: [],
         likesCount: 0,
         mentions: [],
