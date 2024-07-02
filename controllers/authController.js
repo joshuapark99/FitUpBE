@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, REFRESH_SECRET} = require('../config');
 
+
+// request body: username, email, firstName, lastName, password
 exports.registerUser = async (req, res) => {
     try {
         const { username, email, firstName, lastName, password } = req.body;
@@ -19,6 +21,7 @@ exports.registerUser = async (req, res) => {
     }
 }
 
+// request body: email, password
 exports.loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -43,6 +46,7 @@ exports.loginUser = async (req, res) => {
     }
 }
 
+// request body: refreshToken
 exports.refreshTokenUser = async (req, res) => {
     try {
         const { refreshToken } = req.body;
@@ -75,6 +79,7 @@ exports.refreshTokenUser = async (req, res) => {
     }
 }
 
+// request body: refreshToken
 exports.logoutUser = async (req, res) => {
     const { refreshToken } = req.body;
     if (!refreshToken) return res.status(403).json({ message: 'refresh token not provided' });

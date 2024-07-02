@@ -1,5 +1,5 @@
 // Meant to be only used for testing purposes
-
+const User = require('../../models/User')
 
 
 const request = require('supertest');
@@ -22,8 +22,9 @@ async function setupUser(user, app) {
 		}
 
 		if(response.statusCode === 201) {
-			const tokens = { accessToken: response.body.token, refreshToken: response.body.refreshToken };
-			return tokens
+			const userObject = await User.findOne({ email: user.email })
+			const userInfo = { accessToken: response.body.token, refreshToken: response.body.refreshToken, userId: userObject._id};
+			return userInfo
 		} else {
 			throw new Error(`Error logging in user: ${response.body.message}`)
 		}

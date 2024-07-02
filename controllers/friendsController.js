@@ -4,6 +4,8 @@ const User = require('../models/User')
 const validOperations = [ 'send', 'accept', 'block', 'unblock', 'unfriend'];
 const validStatuses = ['pending_awaiting2' , 'pending_awaiting1', 'friends', 'blocked_by1', 'blocked_by2', 'blocked_both'];
 
+
+// request body: username, operation
 exports.modifyFriendship = async (req, res) => {
     try {
         const friend_username = req.body.username;
@@ -274,7 +276,7 @@ async function handleUnfriendUser(friendshipTable) {
     return { success: true }
 }
 
-
+// params: userId?
 exports.getUserFriends = async (req, res) => {
     try {
         let userId;

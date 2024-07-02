@@ -1,6 +1,3 @@
-
-
-
 exports.Andrew = {
     username: 'andrewk',
     email: 'testEmail+andrew@gmail.com',
