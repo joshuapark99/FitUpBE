@@ -32,17 +32,17 @@ const postSchema = new mongoose.Schema({
         type: String,
         enum: ['text', 'media', 'workout']
     }],
-    // workout: { 
-    //     type: mongoose.Schema.Types.ObjectId, 
-    //     validate: {
-    //         validator: function(value) {
-    //             // if postType does not include workout, return true meaning 
-    //             return (!this.postType.includes('workout') && !value) || (this.categories.includes('workout') && value)
-    //         }
-    //     },
-    //     message: 'Workout details must be provided if and only if postType includes "workout"',
-    //     ref: 'Workout'
-    // }
+    workout: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        validate: {
+            validator: function(value) {
+                // if postType does not include workout, return true meaning 
+                return (!this.postType.includes('workout') && !value) || (this.postType.includes('workout') && value)
+            },
+            message: 'Workout details must be provided if and only if postType includes "workout"',
+        },
+        ref: 'Workout'
+    }
 });
 
 module.exports = mongoose.model('Post', postSchema)
