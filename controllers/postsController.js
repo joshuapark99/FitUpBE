@@ -39,7 +39,7 @@ exports.toggleLikeOnPost = async (req, res) => {
 // request body: Post schema
 exports.createPost = async (req, res) => {
     try {
-        const { text, mediaUrl, dateCreated, mentions, postType } = req.body;
+        const { text, mediaUrl, dateCreated, mentions, postType, workout } = req.body;
         validatePostTypes(postType);
         const userId = req.user_id;
 
@@ -50,7 +50,8 @@ exports.createPost = async (req, res) => {
             dateCreated: dateCreated,
             likesCount: 0,
             mentions: mentions,
-            postType: postType
+            postType: postType,
+            workout: workout
         });
 
         await newPost.save();

@@ -2,8 +2,9 @@ const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const apiV1Routes = require('./routes/v1')
+const loadExercises = require('./utils/loadExercises')
 const printRoutes = require('./utils/printRoutes')
-const { PORT, MONGO_URI } = require('./config')
+const { PORT, MONGO_URI, REFRESH_EXERCISES } = require('./config')
 
 
 const app = express();
@@ -17,6 +18,14 @@ mongoose.connect(MONGO_URI).then(() => {
 }).catch(err => {
     console.error(err);
 });
+
+(async () => {
+    try { 
+        await loadExercises({"load": REFRESH_EXERCISES});
+    } catch(err) {
+        console.log(err);
+    }
+})();
 
 app.use('/api/v1', apiV1Routes);
 

@@ -101,26 +101,52 @@ describe('Posts API', async () => {
             });
     
             it('should create a post document when postType has workout and all fields are valid', async () => {
-                // This will need to be fleshed out once workout model is created
+                exampleWorkoutPost = createPostTypeObject(ianId, ['workout']);
+    
+                const res = await request(app)
+                    .post(`${apiPathRoot}${apiEndpoint}`)
+                    .set("Authorization", ianAccessToken)
+                    .send(exampleWorkoutPost);
+    
+                expect(res.status).to.equal(201);
+                expect(res.body).to.have.property("message", "Post successfully uploaded");
+
+                const post = await Post.findOne({ userId: ianId })
                 
-                // exampleTextPost = createPostTypeObject(ianId, ['workout']);
+                expect(post).to.have.property("workout").that.deep.equals(exampleWorkoutPost.workout);
+                expect(post).to.have.property("postType").that.deep.equals(exampleWorkoutPost.postType)
+                expect(post.text).to.be.null;
+                expect(post.mediaUrl).to.be.null;
+
+            });
+
+            it('should create a post document when postType has text, media, and workout and all fields are valid', async () => {
+                examplePost = createPostTypeObject(ianId, ['text', 'media', 'workout']);
     
-                // const res = await request(app)
-                //     .post(`${apiPathRoot}${apiEndpoint}`)
-                //     .set("Authorization", ianAccessToken)
-                //     .send(exampleTextPost);
+                const res = await request(app)
+                    .post(`${apiPathRoot}${apiEndpoint}`)
+                    .set("Authorization", ianAccessToken)
+                    .send(examplePost);
     
-                // expect(res.status).to.equal(201);
-                // expect(res.body).to.have.property("message", "Post successfully uploaded");
+                expect(res.status).to.equal(201);
+                expect(res.body).to.have.property("message", "Post successfully uploaded");
+    
+                const post = await Post.findOne({ userId: ianId })
+    
+                expect(post).to.have.property("text", examplePost.text);
+                expect(post).to.have.property("mediaUrl", examplePost.mediaUrl);
+                expect(post).to.have.property("workout").that.deep.equals(examplePost.workout);
+                expect(post).to.have.property("postType").that.deep.equals(examplePost.postType)
             });
 
         });
         
         describe('invalid operations', async () => {
-            it('should throw an error when postType has media or text and mediaUrl/text is not provided', async () => {
-                examplePost = createPostTypeObject(ianId, ['text', 'media']);
+            it('should throw an error when postType has media, text, and workout and mediaUrl/text/workoutId is not provided', async () => {
+                examplePost = createPostTypeObject(ianId, ['text', 'media', 'workout']);
                 examplePost.text = null;
                 examplePost.mediaUrl = null;
+                examplePost.workout = null;
 
                 const res = await request(app)
                     .post(`${apiPathRoot}${apiEndpoint}`)
@@ -130,6 +156,7 @@ describe('Posts API', async () => {
                 expect(res.status).to.equal(403)
                 expect(res.body.errors.text).to.have.property("message",'Text must be provided if and only if postType includes "text"');
                 expect(res.body.errors.mediaUrl).to.have.property("message",'Media URL must be provided if and only if postType includes "media"');
+                expect(res.body.errors.workout).to.have.property("message",'Workout details must be provided if and only if postType includes "workout"');
             });
 
             it('should throw an error when postType is empty', async () => {
@@ -182,7 +209,8 @@ describe('Posts API', async () => {
         const apiEndpoint = '/';
 
         it("should return a post when provided with the post's post_id", async () => {
-            const examplePostObject = createPostTypeObject(ianId, ['text','media']);
+            const examplePostObject = createPostTypeObject(ianId, ['text','media','workout']);
+
             const examplePost = new Post(examplePostObject);
             await examplePost.save();
 
@@ -192,7 +220,7 @@ describe('Posts API', async () => {
                 
 
             expect(res.status).to.equal(200)
-            const { postId = res.body._id, userId, text, mediaUrl, likes, likesCount, mentions, postType} = res.body
+            const { postId = res.body._id, userId, text, mediaUrl, likes, likesCount, mentions, postType, workout } = res.body
             expect(postId).to.equal(examplePost._id.toString())
             expect(userId).to.equal(examplePost.userId.toString())
             expect(text).to.equal(examplePost.text)
@@ -201,6 +229,7 @@ describe('Posts API', async () => {
             expect(likesCount).to.equal(examplePost.likesCount)
             expect(mentions).to.deep.equal(examplePost.mentions)
             expect(postType).to.deep.equal(examplePost.postType)
+            expect(workout).to.deep.equal(examplePost.workout.toString())
 
             await Post.findByIdAndDelete(examplePost._id)
         });
