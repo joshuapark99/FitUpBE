@@ -124,6 +124,8 @@ dist
 
 .vscode
 
+.VSCodeCounter
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged

@@ -1,64 +1,3 @@
-// const fs = require("fs");
-// const path = require("path");
-// const csv = require("csv-parser");
-
-// const ExerciseTemplate = require("../models/ExerciseTemplate");
-
-// const csvFilePath = path.join(__dirname, "../public/megaGymDataset.csv");
-
-// const loadExercises = async () => {
-//   await ExerciseTemplate.deleteMany({});
-
-//   const exercises = [];
-//   let count = 0;
-//   // Extract exercises from csv
-//   fs.createReadStream(csvFilePath)
-//     .pipe(csv())
-//     .on("data", async (row) => {
-//       // Extract only the needed fields
-//       const exercise = {
-//         Name: row.Title.toString(),
-//         Desc: row.Desc.toString(),
-//         Category: row.Type.toString(),
-//         BodyPart: row.BodyPart.toString(),
-//         Equipment: row.Equipment.toString(),
-//       };
-//       // exercises.push(exercise);
-//       try {
-//         const dbExercise = new ExerciseTemplate({
-//           name: exercise.Name,
-//           description: exercise.Desc,
-//           category: exercise.Category,
-//           bodyPart: exercise.BodyPart,
-//           equipment: exercise.Equipment,
-//         });
-
-//         await dbExercise.save();
-//         if (count % 100 == 0) {
-//           console.log(`Loaded ${count} exercises`);
-//         }
-//         count += 1;
-//       } catch (err) {
-//         if (err.code === 11000) {
-//           console.warn(
-//             `Duplicate entry for exercise: ${exercise.Name}. Skipping...`
-//           );
-//         } else {
-//           console.log("there was an error");
-//           console.log(err);
-//           throw { source: "dbload", Error: err };
-//         }
-//       }
-//     })
-//     .on("error", (err) => {
-//       throw { source: "csv", Error: err };
-//     });
-// };
-
-// module.exports = loadExercises;
-
-
-
 const fs = require("fs");
 const path = require("path");
 const csv = require("csv-parser");
@@ -67,24 +6,21 @@ const ExerciseTemplate = require("../models/ExerciseTemplate");
 const csvFilePath = path.join(__dirname, "../public/megaGymDataset.csv");
 
 const loadExercises = async (options) => {
-
   try {
-    if(options?.load) await ExerciseTemplate.deleteMany({});
+    if (options?.load) await ExerciseTemplate.deleteMany({});
   } catch (err) {
-    throw { "source": "deleteExercises", "err": err }
+    throw { source: "deleteExercises", err: err };
   }
-
 
   const promises = [];
   let count = 0;
 
   // Create a Promise to handle the stream
   const processCSV = new Promise((resolve, reject) => {
-    if(!options?.load) 
-      {
-        resolve();
-        return;
-      }
+    if (!options?.load) {
+      resolve();
+      return;
+    }
     fs.createReadStream(csvFilePath)
       .pipe(csv())
       .on("data", (row) => {
@@ -113,9 +49,13 @@ const loadExercises = async (options) => {
               count += 1;
             } catch (err) {
               if (err.code === 11000) {
-                console.warn(`Duplicate entry for exercise: ${exercise.Name}. Skipping...`);
+                console.warn(
+                  `Duplicate entry for exercise: ${exercise.Name}. Skipping...`
+                );
               } else {
-                console.warn(`Error saving exercise ${exercise?.Name} to database: ${err}`);
+                console.warn(
+                  `Error saving exercise ${exercise?.Name} to database: ${err}`
+                );
               }
             }
           };
